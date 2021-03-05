@@ -7,6 +7,8 @@ import time
 import tldextract
 
 
+edges = []
+
 def main():
 
     filename = sys.argv[1]
@@ -15,7 +17,7 @@ def main():
     start = int(sys.argv[3])
     entries = int (sys.argv[4])
     f = open(filename, 'r')
-    of = open(output,"w")
+    of = open(output,"a")
     count = 0
     for line in f:
         result = "" 
@@ -65,9 +67,10 @@ def extract_domain(website):
     return domain
 
 def classify(nameserver, website):
-    domain = extract_domain(website)
+    domain = extract_domain(nameserver)
     if (website == domain):
         return 'private'
+    edges.append((domain, website))
     return 'third-party'
 
 if __name__ == "__main__":
