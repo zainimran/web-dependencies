@@ -14,12 +14,15 @@ nodes = []
 def main():
 
     filename = sys.argv[1]
-    output = sys.argv[2]
+    start = int(sys.argv[2])
+    entries = int (sys.argv[3])
 
-    start = int(sys.argv[3])
-    entries = int (sys.argv[4])
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    output_path = './outputs/output-{0}.json'.format(timestr)
+
     f = open(filename, 'r')
-    of = open(output,"w")
+    of = open(output_path,"w")
+
     count = 0
     for line in f:
         result = "" 
@@ -90,7 +93,8 @@ def main():
             }
             id_increment += 1
 
-    jf = open('../frontend/src/graphData.json',"w")
+    jf_path = '../frontend/src/graph-data/graphData-{0}.json'.format(timestr)
+    jf = open(jf_path, "w")
     g_object = {
         'nodes': nodes,
         'edges': edges 
