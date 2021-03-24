@@ -2,5 +2,5 @@
 Run python virtual environment with `pipenv shell`
 
 # To run findNS.py
-`python findNS.py <input_file> <filetowriteIn> <start_index> <number_of_entries>`
+`python findNS.py <input_file> <start_index> <number_of_entries>`
 
