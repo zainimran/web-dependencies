@@ -33,7 +33,8 @@ def extract_url_from_hispar_list(line):
 def extract_domain(url, full_domain=False):
     tld = tldextract.extract(url)
     domain = tld.domain + '.' + tld.suffix
-    if full_domain:
+    subdomains_to_ignore = ['www', '']
+    if full_domain and tld.subdomain not in subdomains_to_ignore:
         domain = tld.subdomain + '.' + domain
     return domain
 
@@ -42,41 +43,36 @@ def get_string_of_ns(domain):
     string_of_ns = str(string_of_ns, 'utf-8')
 
     if string_of_ns == '':
-        domain = extract_domain(domain)
-        string_of_ns = subprocess.check_output(['dig', 'ns', '@8.8.8.8', domain, '+short'])
-        string_of_ns = str(string_of_ns,"utf-8")
+        domain_short = extract_domain(domain)
+        string_of_ns = subprocess.check_output(['dig', 'ns', '@8.8.8.8', domain_short, '+short'])
+        string_of_ns = str(string_of_ns, 'utf-8')
 
     return string_of_ns
 
-def run_dig_for_domain(domain, output_file):
+def can_get_domain_info(domain, output_file):
     output = subprocess.check_output(['dig', domain, '+short'])
     output = str(output, 'utf-8')
     if 'NXDOMAIN' in output:
-        output_file.write(f'{domain} -> NXDOMAIN\n')
-        return
+        output_file.write(f'{domain}\tNXDOMAIN\n')
+        return False
     elif 'SERVFAIL' in output:
         output = subprocess.check_output(['dig', '@8.8.8.8', domain, '+short'])
         output = str(output, 'utf-8')
         if 'NXDOMAIN' in output:
-            output_file.write(f'{domain} -> NXDOMAIN\n')
-            return
+            output_file.write(f'{domain}\tNXDOMAIN\n')
+            return False
         elif 'SERVFAIL' in output:
-            output_file.write(f'{domain} -> SERVFAIL\n')
-            return
-    
-    string_of_ns = get_string_of_ns(domain)
-    
-    if string_of_ns != '':
-        list_of_ns = string_of_ns.split('\n')[:-1]
-        return list_of_ns
+            output_file.write(f'{domain}\tSERVFAIL\n')
+            return False
+    return True
 
 def get_ns_provider_domain_root_from_soa(ns_domain):
     output = subprocess.check_output(['dig', 'soa', '@8.8.8.8', ns_domain, '+short'])
     output = str(output,"utf-8")
     if len(output) > 0:
         ns_provider_contact = output.split(' ')[1]
-        ns_provider_root_domain = tldextract.extract(ns_provider_contact).domain
-        return ns_provider_root_domain
+        ns_provider_domain_root = tldextract.extract(ns_provider_contact).domain
+        return ns_provider_domain_root
 
 def classify_ns(ns, domain):
     is_private = False
@@ -84,6 +80,7 @@ def classify_ns(ns, domain):
     ns_domain = extract_domain(ns)
     ns_domain_root = tldextract.extract(ns).domain
 
+    domain = extract_domain(domain)
     domain_root = tldextract.extract(domain).domain
 
     if ns_domain == domain:
@@ -99,7 +96,7 @@ def classify_ns(ns, domain):
     if is_private:
         classification = 'Private'
     
-    return classification, ns_domain_root, domain
+    return classification, ns_domain_root
 
 def main():
 
@@ -107,7 +104,7 @@ def main():
     
     starting_line = int(sys.argv[2])
     lines_to_read = int (sys.argv[3])
-    line_number = 1
+    line_number = 0
 
     input_file, output_file, graph_file, graph_file_dup = [
         file_handlers[k] for k in (
@@ -120,8 +117,10 @@ def main():
 
     edges = []
     nodes = []
+    domains = set()
 
     for line in input_file:
+        line_number += 1
         try:
             if line_number >= starting_line + lines_to_read:
                 break
@@ -134,18 +133,28 @@ def main():
                     continue
 
                 domain = extract_domain(url, full_domain=True)
-                list_of_ns = run_dig_for_domain(domain, output_file)
-                if list_of_ns is not None:
-                    for ns in list_of_ns:    
-                        classification, ns_domain_root, domain = classify_ns(ns, domain)
+                
+                if domain not in domains:
+                    domains.add(domain)
+                else:
+                    continue
 
-                        nodes.extend([ns_domain_root, domain])
-                        edges.append((ns_domain_root, domain))
-                        
-                        output_file.write(domain + "\t" + ns.rstrip('.') + "\t" + classification + "\n")
+                if not can_get_domain_info(domain, output_file):
+                    continue
+                
+                string_of_ns = get_string_of_ns(domain)
+                if string_of_ns != '':
+                    list_of_ns = string_of_ns.split('\n')[:-1]
+
+                    if list_of_ns is not None:
+                        for ns in list_of_ns:    
+                            classification, ns_domain_root = classify_ns(ns, domain)
+
+                            nodes.extend([ns_domain_root, domain])
+                            edges.append((ns_domain_root, domain))
+                            
+                            output_file.write(domain + "\t" + ns.rstrip('.') + "\t" + classification + "\n")
             
-            line_number += 1
-
         except subprocess.CalledProcessError as e:
             pass
 
@@ -158,14 +167,14 @@ def main():
             nodes[i] = {
                 "id": n_id,
                 "label": str(n),
-                "color":'#00f',
+                "color":'#000',
                 "x": random.random(),
                 "y": random.random()
             }
 
-            # if node represents a NS provider, then we set its color to #dce622
+            # if node represents a NS provider, then we set its color to #00f
             if n.find('.') == -1 :
-                nodes[i]['color'] = '#dce622'
+                nodes[i]['color'] = '#00f'
             
             n_map[n] = n_id
             id_increment += 1

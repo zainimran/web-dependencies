@@ -1,0 +1,91 @@
+{
+    "nodes": [
+        {
+            "id": "n1",
+            "label": "domains.google.com",
+            "color": "#000",
+            "x": 0.2099086483383482,
+            "y": 0.3924064074987964
+        },
+        {
+            "id": "n2",
+            "label": "news.google.com",
+            "color": "#000",
+            "x": 0.8688365590308149,
+            "y": 0.3243655954009318
+        },
+        {
+            "id": "n3",
+            "label": "google",
+            "color": "#00f",
+            "x": 0.8240630005138346,
+            "y": 0.9555467673922918
+        },
+        {
+            "id": "n4",
+            "label": "sketchup.google.com",
+            "color": "#000",
+            "x": 0.677342686253593,
+            "y": 0.4837396370313298
+        },
+        {
+            "id": "n5",
+            "label": "fiber.google.com",
+            "color": "#000",
+            "x": 0.22640474945987388,
+            "y": 0.5784030015706471
+        },
+        {
+            "id": "n6",
+            "label": "material.google.com",
+            "color": "#000",
+            "x": 0.7531896603078575,
+            "y": 0.9062181849936491
+        },
+        {
+            "id": "n7",
+            "label": "google.com",
+            "color": "#000",
+            "x": 0.09790170259318032,
+            "y": 0.22114371450198067
+        }
+    ],
+    "edges": [
+        {
+            "id": 1,
+            "source": "n3",
+            "target": "n2",
+            "label": "DNS"
+        },
+        {
+            "id": 2,
+            "source": "n3",
+            "target": "n1",
+            "label": "DNS"
+        },
+        {
+            "id": 3,
+            "source": "n3",
+            "target": "n6",
+            "label": "DNS"
+        },
+        {
+            "id": 4,
+            "source": "n3",
+            "target": "n5",
+            "label": "DNS"
+        },
+        {
+            "id": 5,
+            "source": "n3",
+            "target": "n7",
+            "label": "DNS"
+        },
+        {
+            "id": 6,
+            "source": "n3",
+            "target": "n4",
+            "label": "DNS"
+        }
+    ]
+}
