@@ -1,6 +1,6 @@
 import React from 'react'
 import './App.css';
-import Graph from "./pages/Graph";
+import Graph from "./components/Graph";
 import { GeistProvider, CssBaseline } from '@geist-ui/react'
 
 

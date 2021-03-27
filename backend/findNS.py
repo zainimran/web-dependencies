@@ -15,8 +15,8 @@ def initialization():
     timestr = time.strftime('%m%d-%H%M')
  
     output_path = './outputs/{0}'.format(timestr)
-    graph_path = '../frontend/src/graphData.json'
-    graph_path_dup = '../frontend/src/data/{0}.json'.format(timestr)
+    graph_path = '../outputs/graphs/{0}'.format(timestr)
+    graph_path_dup = '../static-frontend/data/graphData.json'
 
     file_handlers = {
         'input_file': open(input_path, 'r'),
@@ -70,9 +70,11 @@ def get_ns_provider_domain_root_from_soa(ns_domain):
     output = subprocess.check_output(['dig', 'soa', '@8.8.8.8', ns_domain, '+short'])
     output = str(output,"utf-8")
     if len(output) > 0:
-        ns_provider_contact = output.split(' ')[1]
-        ns_provider_domain_root = tldextract.extract(ns_provider_contact).domain
-        return ns_provider_domain_root
+        ns_provider_contact_array = output.split(' ')
+        if len(ns_provider_contact_array) > 2:
+            ns_provider_contact = ns_provider_contact_array[1]
+            ns_provider_domain_root = tldextract.extract(ns_provider_contact).domain
+            return ns_provider_domain_root
 
 def classify_ns(ns, domain):
     is_private = False
@@ -87,8 +89,10 @@ def classify_ns(ns, domain):
         is_private = True
     elif ns_domain_root == domain_root:
         is_private = True
-    else: 
+    else:
         ns_domain_root = get_ns_provider_domain_root_from_soa(ns_domain)
+        if ns_domain_root is None:
+            return
         if ns_domain_root == domain_root:
             is_private = True
     
