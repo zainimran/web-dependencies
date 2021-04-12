@@ -3,7 +3,7 @@
 - [Web Dependencies Project](#web-dependencies-project)
   - [1. To run script to collect up-to-date DNS data](#1-to-run-script-to-collect-up-to-date-dns-data)
   - [2. How to view the network graph?](#2-how-to-view-the-network-graph)
-  - [3. TODO](#3-todo)
+  - [3. To run script to collect up-to-date CDN data](#3-to-run-script-to-collect-up-to-date-cdn-data)
   
 ## 1. To run script to collect up-to-date DNS data
 1. Navigate to backend/script side of the project with `cd backend` 
@@ -16,5 +16,9 @@
 1. Make sure you are in the `static-frontend` directory
 2. Start a local server by using the following command `python3 -m http.server` and then browse to the URL printed to see the network graph
 
-## 3. TODO
-/frontend
+## 3. To run script to collect up-to-date CDN data
+1. Run `docker run -it --rm -p 8080:1337 turbobytes/cdnfinder cdnfinderserver --phantomjsbin="/bin/phantomjs"` to start the CDNFinder server
+2. Navigate to backend/script side of the project with `cd backend`  
+3. If not done already then install project dependencies with `pipenv install`
+4. Run python virtual environment with `pipenv shell`
+5. Run the `findCDN.py` CDN script with `python findCND.py <input_file> <start_index> <number_of_entries>` , where `input_file` is hispar's latest 100k list of URLs
