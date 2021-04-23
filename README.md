@@ -21,4 +21,4 @@
 2. Navigate to backend/script side of the project with `cd backend`  
 3. If not done already then install project dependencies with `pipenv install`
 4. Run python virtual environment with `pipenv shell`
-5. Run the `findCDN.py` CDN script with `python findCND.py <input_file> <start_index> <number_of_entries>` , where `input_file` is hispar's latest 100k list of URLs
+5. Run the `findCDN.py` CDN script with `python findCDN.py <input_file> <start_index> <number_of_entries>` , where `input_file` is hispar's latest 100k list of URLs
