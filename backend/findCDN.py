@@ -4,20 +4,28 @@ from icecream import ic
 import json
 import tldextract
 import requests
+import random
+import time
 
 def main():
     input_p = sys.argv[1]
+    timestr = time.strftime('%m%d-%H%M')
 
     input_f =  open(input_p, 'r')
-    output_f = open('output.json', 'w')
+    output_f = open(f'./outputs-cdn/{timestr}.json', 'w')
     output_f2 = open('output-detailed.json', 'w')
+    graph_file = open(f'./outputs-cdn/graphs/{timestr}.json', 'w')
+    graph_file_dup = open('../static-frontend/data/graphData.json', 'w')
 
     starting_line = int(sys.argv[2])
     lines_to_read = int (sys.argv[3])
+    
     line_n = 0
     result = []
     detailed_result = []
     urls_parsed = set()
+    edges = set()
+    nodes = set()
 
     for line in input_f:
         try:
@@ -66,9 +74,14 @@ def main():
                         if cdn is not None:
                             cdns.add(cdn)
                 
+                cdns = list(cdns)
                 if bool(cdns):
-                    website_cdn = {'website': website_sld, 'CDNs': list(cdns)}
+                    website_cdn = {'website': website_sld, 'CDNs': cdns}
                     result.append(website_cdn)
+                    nodes.add((website_sld, 'Client'))
+                    for k in cdns:
+                        nodes.add((k, 'Provider'))
+                        edges.add((k, website_sld))
     
         except subprocess.CalledProcessError as e:
                 ic(str(e.output))
@@ -77,6 +90,47 @@ def main():
     
     output_f.write(json.dumps(result, indent=4))
     output_f2.write(json.dumps(detailed_result, indent=4))
+
+    n_map = {}
+    if nodes:
+        nodes = list(nodes)
+        id_increment = 1
+        for i, n in enumerate(nodes):
+            n_id = f'n{str(id_increment)}'
+            color = '#000'
+            if n[1] == 'Provider':
+                color = '#00f'
+
+            nodes[i] = {
+                "id": n_id,
+                "label": str(n[0]),
+                "color": color,
+                "x": random.random(),
+                "y": random.random()
+            }
+            
+            n_map[n] = n_id
+            id_increment += 1
+    
+    if edges:
+        edges = list(edges)
+        id_increment = 1
+        for i, e in enumerate(edges):
+            edges[i] = {
+                "id": id_increment,
+                "source": n_map[(e[0], 'Provider')],
+                "target": n_map[(e[1], 'Client')],
+                "label": 'DNS',
+            }
+            id_increment += 1
+
+    graph_object = {
+        'nodes': nodes,
+        'edges': edges 
+    }
+
+    graph_file.write(json.dumps(graph_object, indent=4))
+    graph_file_dup.write(json.dumps(graph_object, indent=4))
 
 if __name__ == "__main__":
     main()
