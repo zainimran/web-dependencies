@@ -120,7 +120,7 @@ def main():
                 "id": id_increment,
                 "source": n_map[(e[0], 'Provider')],
                 "target": n_map[(e[1], 'Client')],
-                "label": 'DNS',
+                "label": 'CDN',
             }
             id_increment += 1
 
