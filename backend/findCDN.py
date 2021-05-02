@@ -17,6 +17,7 @@ def main():
     graph_file = open(f'./outputs-cdn/graphs/{timestr}.json', 'w')
     graph_file_dup = open('../static-frontend/data/graphData.json', 'w')
 
+    cname_chain = list(json.load(open('./cnamechain.json', 'r')))
     starting_line = int(sys.argv[2])
     lines_to_read = int (sys.argv[3])
     
@@ -60,26 +61,32 @@ def main():
                 if cdn_records is None:
                     continue
                 
-                cdns = set()
+                s_cdn = set()
                 for record in cdn_records:
                     cnames = record['cnames']
-                    cnames_tld = []
+                    l_cnames_tld = []
                     for cn in cnames:
                         extract = tldextract.extract(cn)
                         cn_tld = extract.domain + '.' + extract.suffix
-                        cnames_tld.append(cn_tld)
+                        l_cnames_tld.append(cn_tld)
 
-                    if any(cname == website_tld for cname in cnames_tld):
-                        cdn = record['cdn']
-                        if cdn is not None:
-                            cdns.add(cdn)
+                    if any(cname_tld == website_tld for cname_tld in l_cnames_tld):
+                        cdn = None
+                        for cname_tld in l_cnames_tld:
+                            for link in cname_chain:
+                                if link[0] == ".{}".format(cname_tld):
+                                    cdn = link[1]
+                                    break
+                            if cdn is not None:
+                                s_cdn.add(cdn)
+                                break
                 
-                cdns = list(cdns)
-                if bool(cdns):
-                    website_cdn = {'website': website_sld, 'CDNs': cdns}
+                l_cdn = list(s_cdn)
+                if bool(l_cdn):
+                    website_cdn = {'website': website_sld, 'CDNs': l_cdn}
                     result.append(website_cdn)
                     nodes.add((website_sld, 'Client'))
-                    for k in cdns:
+                    for k in l_cdn:
                         nodes.add((k, 'Provider'))
                         edges.add((k, website_sld))
     
