@@ -104,9 +104,9 @@ def main():
         id_increment = 1
         for i, n in enumerate(nodes):
             n_id = f'n{str(id_increment)}'
-            color = '#000'
+            color = '#FFFF00'
             if n[1] == 'Provider':
-                color = '#00f'
+                color = '#0000FF'
 
             nodes[i] = {
                 "id": n_id,

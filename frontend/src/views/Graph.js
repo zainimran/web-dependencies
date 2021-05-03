@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
 import {
     Sigma, 
@@ -5,11 +6,17 @@ import {
     RandomizeNodePositions,
     EdgeShapes,
     ForceAtlas2,
-} from 'react-sigma';
+    SigmaEnableWebGL,
+} from 'react-sigma'
+import { SigmaLoader } from '../components'
 
-const graph = require('../graphData.json')
+const Graph = (props) => {
+    const type = props.type
+    let graph
 
-const Graph = () => {
+    if (type == 'dns') graph = require('../data/dns.json')
+    else if (type == 'cdn') graph = require('../data/cdn.json')
+
     const sigmaSettings = {
         drawEdges: true,
         drawLabels: true,
@@ -21,7 +28,7 @@ const Graph = () => {
         defaultNodeType: "def",
         defaultEdgeType: "def",
         defaultLabelColor: "#000",
-        defaultEdgeColor: "#cfd2d6",
+        defaultEdgeColor: "#d3d3d3",
         defaultNodeColor: "#E1D804",
         defaultLabelSize: 14,
         borderSize: 1,
@@ -53,14 +60,15 @@ const Graph = () => {
     return (
         <Sigma
             renderer="webgl"
-            graph={graph}
             settings={sigmaSettings}
             style={{maxWidth:"inherit", height:"100vh"}}
         >
-            <ForceAtlas2 />
-            <EdgeShapes default="arrow" />
-            <RelativeSize initialSize={15}/>
-            <RandomizeNodePositions/>
+            <SigmaLoader graph={graph}>
+                <ForceAtlas2 iterationsPerRender={1} barnesHutOptimize barnesHutTheta={1} slowDown={10} timeout={2000} worker key={`${type}1`} />
+                <EdgeShapes default="curvedArrow" key={`${type}2`} />
+                <RelativeSize initialSize={15} key={`${type}3`} />
+                <RandomizeNodePositions key={`${type}4`} />
+            </SigmaLoader>
         </Sigma>
     );
 };
