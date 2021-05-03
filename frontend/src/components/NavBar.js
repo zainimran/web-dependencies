@@ -9,8 +9,8 @@ const NavBar = () => {
     const changeType = useStoreActions(actions => actions.changeType)
 
     const changeTypeHandler = (e) => {
-        const type = e.target.innerText.toLowerCase()
-        changeType(type)
+        const type = e.target.innerText
+        if (type != null) changeType(type)
     }
     
     return (

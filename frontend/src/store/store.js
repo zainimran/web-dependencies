@@ -7,7 +7,7 @@ const store = createStore(persist({
     }),
     type: '',
     changeType: action((state, payload) => {
-        state.type = payload
+        state.type = String(payload).toLowerCase()
     }),
 }))
 
