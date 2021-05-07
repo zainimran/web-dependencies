@@ -1,21 +1,26 @@
-/* eslint-disable react/prop-types */
 import React from 'react'
-import {
-    Sigma, 
-    RelativeSize, 
-    RandomizeNodePositions,
-    EdgeShapes,
-    ForceAtlas2,
-    SigmaEnableWebGL,
-} from 'react-sigma'
+import { Sigma, RelativeSize, RandomizeNodePositions, EdgeShapes, ForceAtlas2, Filter, NOverlap } from 'react-sigma'
+import Dagre from 'react-sigma/lib/Dagre'
+import ForceLink from 'react-sigma/lib/ForceLink'
 import { SigmaLoader } from '../components'
+import { useStoreState, useStoreActions } from 'easy-peasy'
+import { Row, Col, Text, Select, Spacer, Input } from '@geist-ui/react'
+import Search from '@geist-ui/react-icons/search'
 
-const Graph = (props) => {
-    const type = props.type
-    let graph
+const Graph = () => {
+    const theme = useStoreState(state => state.theme)
+    const service = useStoreState(state => state.service)
+    const graph = useStoreState(state => state.graph)
+    const changeGraph = useStoreActions(actions => actions.changeGraph)
+    const node = useStoreState(state => state.node)
+    const setNode = useStoreActions(actions => actions.setNode)
+    const searchTerm = useStoreState(state => state.searchTerm)
+    const setTerm = useStoreActions(actions => actions.setTerm)
 
-    if (type == 'dns') graph = require('../data/dns.json')
-    else if (type == 'cdn') graph = require('../data/cdn.json')
+    let graphData
+
+    if (service == 'dns') graphData = require('../data/dummy.json')
+    else if (service == 'cdn') graphData = require('../data/dummy.json')
 
     const sigmaSettings = {
         drawEdges: true,
@@ -27,7 +32,7 @@ const Graph = (props) => {
         clone: false,
         defaultNodeType: "def",
         defaultEdgeType: "def",
-        defaultLabelColor: "#000",
+        defaultLabelColor: (theme == 'light') ? "#000" : "#FFF",
         defaultEdgeColor: "#d3d3d3",
         defaultNodeColor: "#E1D804",
         defaultLabelSize: 14,
@@ -57,19 +62,45 @@ const Graph = (props) => {
         zoomRatio: 0.5
     }
 
+    let graphComponent = <></>
+    if (graph == 'forceatlas2') graphComponent = <ForceAtlas2 iterationsPerRender={1} barnesHutOptimize barnesHutTheta={1} slowDown={10} timeout={2000} worker key={`${service}1`} />
+    else if (graph == 'dagre') graphComponent = <Dagre boundingBox={{ maxX: 10, maxY: 10, minX: 0, minY: 0 }} easing="cubicInOut" rankDir="LR" key={`${service}1`} />
+    else if (graph == 'forcelink') graphComponent = <ForceLink background easing="cubicInOut" iterationsPerRender={1} linLogMode timeout={1000} worker key={`${service}1`} />
+    else if (graph == 'noverlap') graphComponent = <NOverlap duration={3000} easing="quadraticInOut" gridSize={20} maxIterations={100} nodeMargin={10} scaleNodes={4} speed={10} /> 
+
+    const searchNode = e => setTerm(e.target.value)
+
+    const nodesFilter = n => {
+        if (searchTerm) return n.label.toLowerCase().includes(searchTerm)
+        return true
+    }
+
     return (
-        <Sigma
-            renderer="webgl"
-            settings={sigmaSettings}
-            style={{maxWidth:"inherit", height:"100vh"}}
-        >
-            <SigmaLoader graph={graph}>
-                <ForceAtlas2 iterationsPerRender={1} barnesHutOptimize barnesHutTheta={1} slowDown={10} timeout={2000} worker key={`${type}1`} />
-                <EdgeShapes default="curvedArrow" key={`${type}2`} />
-                <RelativeSize initialSize={15} key={`${type}3`} />
-                <RandomizeNodePositions key={`${type}4`} />
-            </SigmaLoader>
-        </Sigma>
+        <Row gap={.8}>
+            <Col span={4}>
+                <Text>Select graph type</Text>
+                <Select initialValue="forceatlas2" onChange={value => changeGraph(value)}>
+                    <Select.Option value="forceatlas2">ForceAtlas2</Select.Option>
+                    <Select.Option value="dagre">Dagre</Select.Option>
+                    <Select.Option value="forcelink">ForceLink</Select.Option>
+                    <Select.Option value="noverlap">NOverlap</Select.Option>
+                </Select>
+                <Spacer />
+                <Text>Search for a node</Text>
+                <Input icon={<Search />} placeholder="Search..." clearable value={searchTerm} onChange={searchNode} />
+            </Col>
+            <Col span={20}>
+                <Sigma renderer="canvas" settings={sigmaSettings} style={{maxWidth:"inherit", height:"80vh"}} onClickNode={ e => setNode(e.data.node.id) } onClickStage={ e => setNode(null) }>
+                    <SigmaLoader graph={graphData}>
+                        <Filter nodesBy={nodesFilter} neighborsOf={node} />
+                        { graphComponent }
+                        <EdgeShapes default="dashed" key={`${service}2`} />
+                        <RelativeSize initialSize={15} key={`${service}3`} />
+                        <RandomizeNodePositions key={`${service}4`} />
+                    </SigmaLoader>
+                </Sigma>
+            </Col>
+        </Row>
     );
 };
 

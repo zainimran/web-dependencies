@@ -28,20 +28,24 @@ const App = () => {
     }
   }, [])
 
+  const myTheme = {
+    "type": theme,
+    "layout": {
+      "pageWidth": "2400pt"
+    }
+  }
+
   return (
-    <GeistProvider themeType={theme}>
+    <GeistProvider themes={[myTheme]} themeType={theme}>
       <CssBaseline />
       <Page size='large'>
-        <NavBar /> 
+        <NavBar />
         <Switch>
-          <Route path='/dns'>
-            <Graph type='dns' />
-          </Route>
-          <Route path='/cdn'>
-            <Graph type='cdn' />
+          <Route path={["/dns", "/cdn"]}>
+            <Graph />
           </Route>
           <Route path='/'>
-            <Text h5>Click any of the options above to view respective graphs</Text>
+            <Text h5>Click any one of the services above to view their respective graphs</Text>
           </Route>
           <Route component={Error} />
         </Switch>

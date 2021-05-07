@@ -5,12 +5,12 @@ import { Globe, Server } from '@geist-ui/react-icons'
 import { useStoreState, useStoreActions } from 'easy-peasy'
 
 const NavBar = () => {
-    const type = useStoreState(state => state.type)
-    const changeType = useStoreActions(actions => actions.changeType)
+    const service = useStoreState(state => state.service)
+    const changeService = useStoreActions(actions => actions.changeService)
 
-    const changeTypeHandler = (e) => {
-        const type = e.target.innerText
-        if (type != null) changeType(type)
+    const changeServiceHandler = (e) => {
+        const service = e.target.innerText
+        if (service != null) changeService(service)
     }
     
     return (
@@ -22,10 +22,10 @@ const NavBar = () => {
                 <Col span={17}>
                     <Row justify="end">
                         <Link to='/dns' style={{ marginRight: '15px' }}>
-                            <Button auto onClick={(e) => changeTypeHandler(e)}><Globe /><Spacer x={1} inline />DNS</Button>
+                            <Button auto onClick={(e) => changeServiceHandler(e)}><Globe /><Spacer x={1} inline />DNS</Button>
                         </Link>
                         <Link to='/cdn' style={{ marginRight: '15px' }}>
-                            <Button auto onClick={(e) => changeTypeHandler(e)}><Server /><Spacer x={1} inline />CDN</Button>
+                            <Button auto onClick={(e) => changeServiceHandler(e)}><Server /><Spacer x={1} inline />CDN</Button>
                         </Link>
                     </Row>
                 </Col>
