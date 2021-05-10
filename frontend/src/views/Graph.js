@@ -19,8 +19,8 @@ const Graph = () => {
 
     let graphData
 
-    if (service == 'dns') graphData = require('../data/dummy.json')
-    else if (service == 'cdn') graphData = require('../data/dummy.json')
+    if (service == 'dns') graphData = require('../data/dns.json')
+    else if (service == 'cdn') graphData = require('../data/cdn.json')
 
     const sigmaSettings = {
         drawEdges: true,
