@@ -38,7 +38,7 @@ const App = () => {
   return (
     <GeistProvider themes={[myTheme]} themeType={theme}>
       <CssBaseline />
-      <Page size='large'>
+      <Page style={{width: "100%"}}>
         <NavBar />
         <Switch>
           <Route path={["/dns", "/cdn"]}>

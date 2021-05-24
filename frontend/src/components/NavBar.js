@@ -7,10 +7,14 @@ import { useStoreState, useStoreActions } from 'easy-peasy'
 const NavBar = () => {
     const service = useStoreState(state => state.service)
     const changeService = useStoreActions(actions => actions.changeService)
+    const toggleNodeDetails = useStoreActions(actions => actions.toggleNodeDetails)
 
     const changeServiceHandler = (e) => {
         const service = e.target.innerText
-        if (service != null) changeService(service)
+        if (service != null) {
+            changeService(service)
+            toggleNodeDetails(false)
+        }
     }
     
     return (

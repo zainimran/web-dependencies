@@ -12,7 +12,7 @@ const store = createStore(persist({
     }),
     graph: 'forceatlas2',
     changeGraph: action((state, payload) => {
-        state.graph = String(payload).toLowerCase()
+        state.graph = String(payload)
     }),
     node: null,
     setNode: action((state, payload) => {
@@ -22,7 +22,23 @@ const store = createStore(persist({
     searchTerm: '',
     setTerm: action((state, payload) => {
         state.searchTerm = String(payload).toLowerCase()
-    })
+    }),
+    renderer: 'canvas',
+    changeRenderer: action((state, payload) => {
+        state.renderer = String(payload)
+    }),
+    refreshed: true,
+    refresh: action((state, payload) => {
+        state.refreshed = payload
+    }),
+    nodeDetails: null,
+    setNodeDetails: action((state, payload) => {
+        state.nodeDetails = payload
+    }),
+    showNodeDetails: false,
+    toggleNodeDetails: action((state, payload) => {
+        state.showNodeDetails = payload
+    }),
 }))
 
 export default store;

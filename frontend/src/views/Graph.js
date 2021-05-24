@@ -1,11 +1,15 @@
 import React from 'react'
-import { Sigma, RelativeSize, RandomizeNodePositions, EdgeShapes, ForceAtlas2, Filter, NOverlap } from 'react-sigma'
+import { Sigma, EdgeShapes, ForceAtlas2, Filter, NOverlap, SigmaEnableWebGL } from 'react-sigma'
 import Dagre from 'react-sigma/lib/Dagre'
 import ForceLink from 'react-sigma/lib/ForceLink'
 import { SigmaLoader } from '../components'
 import { useStoreState, useStoreActions } from 'easy-peasy'
-import { Row, Col, Text, Select, Spacer, Input } from '@geist-ui/react'
+import { Row, Col, Text, Select, Spacer, Input, Card } from '@geist-ui/react'
 import Search from '@geist-ui/react-icons/search'
+
+const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
 
 const Graph = () => {
     const theme = useStoreState(state => state.theme)
@@ -16,6 +20,19 @@ const Graph = () => {
     const setNode = useStoreActions(actions => actions.setNode)
     const searchTerm = useStoreState(state => state.searchTerm)
     const setTerm = useStoreActions(actions => actions.setTerm)
+    const renderer = useStoreState(state => state.renderer)
+    const changeRenderer = useStoreActions(actions => actions.changeRenderer)
+    const nodeDetails = useStoreState(state => state.nodeDetails)
+    const setNodeDetails = useStoreActions(actions => actions.setNodeDetails)
+    const showNodeDetails = useStoreState(state => state.showNodeDetails)
+    const toggleNodeDetails = useStoreActions(actions => actions.toggleNodeDetails)
+
+    const changeRendererHandler = value => {
+        changeRenderer(value)
+        sleep(500).then(r => {
+            window.location.reload()
+        })
+    }
 
     let graphData
 
@@ -23,12 +40,12 @@ const Graph = () => {
     else if (service == 'cdn') graphData = require('../data/cdn.json')
 
     const sigmaSettings = {
-        drawEdges: true,
+        drawEdges: false,
         drawLabels: true,
         minEdgeSize: 0.5,
         maxEdgeSize: 8,
         minNodeSize: 5,
-        maxNodeSize: 20,
+        maxNodeSize: 100,
         clone: false,
         defaultNodeType: "def",
         defaultEdgeType: "def",
@@ -40,7 +57,6 @@ const Graph = () => {
         edgeColor: "default",
         labelColor: "default",
         labelSize: "proportional",
-        labelSizeRatio: 2,
         nodeBorderColor: "default",
         labelThreshold: 10, // The minimum size a node must have on screen to see its label displayed. This does not affect hovering behavior.
         defaultNodeBorderColor: "#000",//Any color of your choice
@@ -59,11 +75,11 @@ const Graph = () => {
         edgeClickColor: "#09a709",
         adjacentNodeHoverColor: "#00B2EE",
         // camera settings
-        zoomRatio: 0.5
+        zoomingRatio: 0.5
     }
 
     let graphComponent = <></>
-    if (graph == 'forceatlas2') graphComponent = <ForceAtlas2 iterationsPerRender={1} barnesHutOptimize barnesHutTheta={1} slowDown={10} timeout={2000} worker key={`${service}1`} />
+    if (graph == 'forceatlas2') graphComponent = <ForceAtlas2 iterationsPerRender={1} barnesHutOptimize barnesHutTheta={1.5} timeout={2000} worker key={`${service}1`} />
     else if (graph == 'dagre') graphComponent = <Dagre boundingBox={{ maxX: 10, maxY: 10, minX: 0, minY: 0 }} easing="cubicInOut" rankDir="LR" key={`${service}1`} />
     else if (graph == 'forcelink') graphComponent = <ForceLink background easing="cubicInOut" iterationsPerRender={1} linLogMode timeout={1000} worker key={`${service}1`} />
     else if (graph == 'noverlap') graphComponent = <NOverlap duration={3000} easing="quadraticInOut" gridSize={20} maxIterations={100} nodeMargin={10} scaleNodes={4} speed={10} /> 
@@ -75,11 +91,28 @@ const Graph = () => {
         return true
     }
 
+    const nodeClickHandler = e => {
+        setNode(e.data.node.id)
+        toggleNodeDetails(true)
+        setNodeDetails(e.data.node)
+    }
+    const stageClickHandler = () => {
+        setNode(null)
+        toggleNodeDetails(false)
+    }
+
     return (
         <Row gap={.8}>
             <Col span={4}>
-                <Text>Select graph type</Text>
-                <Select initialValue="forceatlas2" onChange={value => changeGraph(value)}>
+                {renderer ? <Text>Current renderer : {renderer}</Text> : null}
+                <Text>Select Renderer</Text>
+                <Select initialValue={renderer} onChange={value => changeRendererHandler(value)}>
+                    <Select.Option value="webgl">WebGL (faster)</Select.Option>
+                    <Select.Option value="canvas">Canvas (fancier)</Select.Option>
+                </Select>
+                <Spacer />
+                <Text>Select Physics model</Text>
+                <Select initialValue={graph} onChange={value => changeGraph(value)}>
                     <Select.Option value="forceatlas2">ForceAtlas2</Select.Option>
                     <Select.Option value="dagre">Dagre</Select.Option>
                     <Select.Option value="forcelink">ForceLink</Select.Option>
@@ -88,17 +121,24 @@ const Graph = () => {
                 <Spacer />
                 <Text>Search for a node</Text>
                 <Input icon={<Search />} placeholder="Search..." clearable value={searchTerm} onChange={searchNode} />
+                <Spacer />
+                <Text>{showNodeDetails && nodeDetails ? 'Node Details' : 'Click on a node to show its details'}</Text>
+                { showNodeDetails && nodeDetails &&
+                <Card>
+                    <h3>{nodeDetails.label}</h3>
+                    <p><b>Type:</b> {nodeDetails.color == "#FFFF00" ? 'Client' : 'Provider'}</p>
+                    <p><b>{nodeDetails.color == "#FFFF00" ? '# of Providers:' : '# of Clients:'}</b> {nodeDetails.size}</p>
+                </Card> }
             </Col>
             <Col span={20}>
-                <Sigma renderer="canvas" settings={sigmaSettings} style={{maxWidth:"inherit", height:"80vh"}} onClickNode={ e => setNode(e.data.node.id) } onClickStage={ e => setNode(null) }>
-                    <SigmaLoader graph={graphData}>
-                        <Filter nodesBy={nodesFilter} neighborsOf={node} />
-                        { graphComponent }
-                        <EdgeShapes default="dashed" key={`${service}2`} />
-                        <RelativeSize initialSize={15} key={`${service}3`} />
-                        <RandomizeNodePositions key={`${service}4`} />
-                    </SigmaLoader>
-                </Sigma>
+                { renderer && 
+                    <Sigma renderer={renderer} settings={sigmaSettings} style={{maxWidth:"inherit", height:"80vh"}} onClickNode={ e => nodeClickHandler(e) } onClickStage={ () => stageClickHandler() }>
+                        <SigmaLoader graph={graphData}>
+                            <Filter nodesBy={nodesFilter} neighborsOf={node} />
+                            { graphComponent }
+                            <EdgeShapes default="dashed" key={`${service}2`} />
+                        </SigmaLoader>
+                </Sigma> }
             </Col>
         </Row>
     );
