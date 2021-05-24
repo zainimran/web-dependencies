@@ -10,8 +10,9 @@ const NavBar = () => {
     const toggleNodeDetails = useStoreActions(actions => actions.toggleNodeDetails)
 
     const changeServiceHandler = (e) => {
-        const service = e.target.innerText
+        let service = e.target.innerText
         if (service != null) {
+            if (service == 'Web Dependencies') service = ''
             changeService(service)
             toggleNodeDetails(false)
         }
@@ -21,7 +22,7 @@ const NavBar = () => {
         <>
             <Row gap={.8} align="middle">
                 <Col span={6}>
-                    <Link to='/'><Text h3>Web Dependencies</Text></Link>
+                    <Link to='/' onClick={(e) => changeServiceHandler(e)}><Text h3>Web Dependencies</Text></Link>
                 </Col>
                 <Col span={17}>
                     <Row justify="end">
