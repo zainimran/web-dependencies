@@ -26,10 +26,10 @@ const NavBar = () => {
                 <Col span={17}>
                     <Row justify="end">
                         <Link to='/dns' style={{ marginRight: '15px' }}>
-                            <Button auto onClick={(e) => changeServiceHandler(e)}><Globe /><Spacer x={1} inline />DNS</Button>
+                            <Button auto type={ service == 'dns' ? 'success-light' : '' } onClick={(e) => changeServiceHandler(e)}><Globe /><Spacer x={1} inline />DNS</Button>
                         </Link>
                         <Link to='/cdn' style={{ marginRight: '15px' }}>
-                            <Button auto onClick={(e) => changeServiceHandler(e)}><Server /><Spacer x={1} inline />CDN</Button>
+                            <Button auto type={ service == 'cdn' ? 'success-light' : '' } onClick={(e) => changeServiceHandler(e)}><Server /><Spacer x={1} inline />CDN</Button>
                         </Link>
                     </Row>
                 </Col>
