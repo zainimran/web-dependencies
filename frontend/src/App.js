@@ -3,7 +3,7 @@ import './App.css';
 import { GeistProvider, CssBaseline, Page, Text } from '@geist-ui/react'
 import { Switch, Route } from "react-router-dom";
 import { NavBar } from "./components";
-import { Error, Graph } from './views'
+import { Error, Graph, Home } from './views'
 import { useStoreState, useStoreActions } from 'easy-peasy'
 
 const App = () => {
@@ -45,7 +45,7 @@ const App = () => {
             <Graph />
           </Route>
           <Route path='/'>
-            <Text h5>Click any one of the services above to view their respective graphs</Text>
+            <Home />
           </Route>
           <Route component={Error} />
         </Switch>

@@ -7,10 +7,6 @@ import { useStoreState, useStoreActions } from 'easy-peasy'
 import { Row, Col, Text, Select, Spacer, Input, Card } from '@geist-ui/react'
 import Search from '@geist-ui/react-icons/search'
 
-const sleep = (milliseconds) => {
-    return new Promise(resolve => setTimeout(resolve, milliseconds))
-}
-
 const Graph = () => {
     const theme = useStoreState(state => state.theme)
     const service = useStoreState(state => state.service)
@@ -20,19 +16,11 @@ const Graph = () => {
     const setNode = useStoreActions(actions => actions.setNode)
     const searchTerm = useStoreState(state => state.searchTerm)
     const setTerm = useStoreActions(actions => actions.setTerm)
-    const renderer = useStoreState(state => state.renderer)
-    const changeRenderer = useStoreActions(actions => actions.changeRenderer)
     const nodeDetails = useStoreState(state => state.nodeDetails)
     const setNodeDetails = useStoreActions(actions => actions.setNodeDetails)
     const showNodeDetails = useStoreState(state => state.showNodeDetails)
     const toggleNodeDetails = useStoreActions(actions => actions.toggleNodeDetails)
-
-    const changeRendererHandler = value => {
-        changeRenderer(value)
-        sleep(500).then(r => {
-            window.location.reload()
-        })
-    }
+    const renderer = useStoreState(state => state.renderer)
 
     let graphData
 
@@ -104,13 +92,6 @@ const Graph = () => {
     return (
         <Row gap={.8}>
             <Col span={4}>
-                {renderer ? <Text>Current renderer : {renderer}</Text> : null}
-                <Text>Select Renderer</Text>
-                <Select initialValue={renderer} onChange={value => changeRendererHandler(value)}>
-                    <Select.Option value="webgl">WebGL (faster)</Select.Option>
-                    <Select.Option value="canvas">Canvas (fancier)</Select.Option>
-                </Select>
-                <Spacer />
                 <Text>Select Physics model</Text>
                 <Select initialValue={graph} onChange={value => changeGraph(value)}>
                     <Select.Option value="forceatlas2">ForceAtlas2</Select.Option>
@@ -125,20 +106,19 @@ const Graph = () => {
                 <Text>{showNodeDetails && nodeDetails ? 'Node Details' : 'Click on a node to show its details'}</Text>
                 { showNodeDetails && nodeDetails &&
                 <Card>
-                    <h3>{nodeDetails.label}</h3>
-                    <p><b>Type:</b> {nodeDetails.color == "#FFFF00" ? 'Client' : 'Provider'}</p>
-                    <p><b>{nodeDetails.color == "#FFFF00" ? '# of Providers:' : '# of Clients:'}</b> {nodeDetails.size}</p>
+                    <Text h3>{nodeDetails.label}</Text>
+                    <Text p><b>Type:</b> {nodeDetails.color == "#FFFF00" ? 'Client' : 'Provider'}</Text>
+                    <Text p><b>{nodeDetails.color == "#FFFF00" ? '# of Providers:' : '# of Clients:'}</b> {nodeDetails.size}</Text>
                 </Card> }
             </Col>
             <Col span={20}>
-                { renderer && 
-                    <Sigma renderer={renderer} settings={sigmaSettings} style={{maxWidth:"inherit", height:"80vh"}} onClickNode={ e => nodeClickHandler(e) } onClickStage={ () => stageClickHandler() }>
-                        <SigmaLoader graph={graphData}>
-                            <Filter nodesBy={nodesFilter} neighborsOf={node} />
-                            { graphComponent }
-                            <EdgeShapes default="dashed" key={`${service}2`} />
-                        </SigmaLoader>
-                </Sigma> }
+                <Sigma renderer={renderer} settings={sigmaSettings} style={{maxWidth:"inherit", height:"80vh"}} onClickNode={ e => nodeClickHandler(e) } onClickStage={ () => stageClickHandler() }>
+                    <SigmaLoader graph={graphData}>
+                        <Filter nodesBy={nodesFilter} neighborsOf={node} />
+                        { graphComponent }
+                        <EdgeShapes default="dashed" key={`${service}2`} />
+                    </SigmaLoader>
+                </Sigma>
             </Col>
         </Row>
     );

@@ -39,9 +39,9 @@ export default class SigmaLoader extends React.PureComponent {
       sigma.graph.clear();
       sigma.graph.read(graph);
     
-      var nodes = sigma.graph.nodes();
-      for(var i = 0; i < nodes.length; i++) {
-        var degree = sigma.graph.degree(nodes[i].id);
+      const nodes = sigma.graph.nodes();
+      for(let i = 0; i < nodes.length; i++) {
+        const degree = sigma.graph.degree(nodes[i].id);
         nodes[i].size = degree;
       }
 
